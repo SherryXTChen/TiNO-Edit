@@ -27,3 +27,12 @@ LatentCLIPvis and LatentVGG are the SD latent space equivalents of the CLIP visi
 
 
 
+``` bibtex
+@inproceedings{chen2024tino,
+  title={TiNO-Edit: Timestep and Noise Optimization for Robust Diffusion-Based Image Editing},
+  author={Chen, Sherry X and Vaxman, Yaron and Ben Baruch, Elad and Asulin, David and Moreshet, Aviad and Lien, Kuo-Chin and Sra, Misha and Sen, Pradeep},
+  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages={6337--6346},
+  year={2024}
+}
+```
