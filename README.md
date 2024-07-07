@@ -26,6 +26,7 @@ LatentCLIPvis and LatentVGG are the SD latent space equivalents of the CLIP visi
 </p>
 
 
+## BibTeX
 
 ``` bibtex
 @inproceedings{chen2024tino,
