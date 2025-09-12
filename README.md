@@ -50,8 +50,8 @@ python app_stroke_guided_image_editing.py \
 See example in `app_stroke_guided_image_editing.py`, which convert user input stroke as follows:
 
 <p align="center">
-  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/2_user.jpg" alt="input" width="25%" style="display:inline-block; margin-right: 5%;">
-  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/2_output.jpg" alt="output" width="25%" style="display:inline-block;">
+  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/examples/2_user.jpg" alt="input" width="25%" style="display:inline-block; margin-right: 5%;">
+  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/examples/2_output.jpg" alt="output" width="25%" style="display:inline-block;">
 </p>
 
 
