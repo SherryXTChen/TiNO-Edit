@@ -15,7 +15,7 @@ TiNO-Edit is an image editing algorithm built on top of Stable Diffusion (SD) by
 
 LatentCLIPvis and LatentVGG are the SD latent space equivalents of the CLIP vision model and VGG. To train these models, see `latentclip` and `latentvgg` respectively. We will provide an explanation of our code soon. We also provide pretrained checkpoints [here](https://www.dropbox.com/scl/fo/0jdk7kddwtfstpc0gshx4/h?rlkey=wdfejfkf5sho513v8l7ddw2px&st=e3nhfopc&dl=0).
 
-## Method (Code coming soon ...)
+## Method
 
 <p align="center">
   <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/method_overview.png" alt="Method overview" width="80%">
@@ -23,6 +23,20 @@ LatentCLIPvis and LatentVGG are the SD latent space equivalents of the CLIP visi
 
 <p align="center">
   <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/pseudocode.png" alt="Pseudocode" width="80%">
+</p>
+
+For pure text-guided image editing, run
+```python
+python text_guided_image_editing.py \
+  --original_image_path <original_image_path> \
+  --original_prompt <original_prompt> \
+  --target_prompt <target_prompt>
+```
+See example in `text_guided_image_editing.py`, which enables face swap from the left to the right image below:
+
+<p align="center">
+  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/input.jpg" alt="input" width="25%" style="display:inline-block; margin-right: 5%;">
+  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/output.jpg" alt="output" width="25%" style="display:inline-block;">
 </p>
 
 
