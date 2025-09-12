@@ -6,10 +6,9 @@ import random
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import PIL.Image
+import numpy as np
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-from transformers import AutoProcessor, CLIPSegForImageSegmentation
 
 from diffusers.callbacks import MultiPipelineCallbacks, PipelineCallback
 from diffusers.image_processor import PipelineImageInput
@@ -39,7 +38,7 @@ def project_decreasing(x):
         x[0] = torch.clamp(x[0], max=1000)
     return x
 
-class TiNOEditPipeline(StableDiffusionImg2ImgPipeline):
+class TiNOEditStrokeGuidedImageEditingPipeline(StableDiffusionImg2ImgPipeline):
     def prepare_latents(self, image, timestep, batch_size, num_images_per_prompt, dtype, device, generator=None):
         if not isinstance(image, (torch.Tensor, PIL.Image.Image, list)):
             raise ValueError(
@@ -375,32 +374,32 @@ def parse_arguments():
     parser.add_argument(
         "--original_image_path",
         type=str,
-        default="assets/input.jpg",
+        default="examples/2_input.jpg",
         help="path to the original image",
+    )
+    parser.add_argument(
+        "--user_input_image_path",
+        type=str,
+        default="examples/2_user.jpg",
+        help="path to the user input image",
     )
     parser.add_argument(
         "--output_image_path",
         type=str,
-        default="assets/output.jpg",
+        default="examples/2_output.jpg",
         help="path to save the output image",
     )
     parser.add_argument(
         "--original_prompt",
         type=str,
-        default="a photo of Audrey Hepburn",
+        default="Snoopy and Charlie",
         help="Description of the original image",
     )
     parser.add_argument(
         "--target_prompt",
         type=str,
-        default="a photo of Marilyn Monroe",
+        default="Snoopy and Charlie next to an apple tree",
         help="Description of the target image"
-    )
-    parser.add_argument(
-        "--mask_prompt",
-        type=str,
-        default="Audrey Hepburn",
-        help="Description of the editing region",
     )
     parser.add_argument(
         "--num_optimization_steps",
@@ -411,7 +410,7 @@ def parse_arguments():
     parser.add_argument(
         "--seed",
         type=int,
-        default=12345,
+        default=-1,
         help="seed for reproducing results"
     )
     
@@ -420,28 +419,6 @@ def parse_arguments():
         args.seed = random.randint(0, 1e10)
     torch.manual_seed(args.seed)
     return args
-
-class SegMaskExtractor(nn.Module):
-    def __init__(self, device):
-        super().__init__()
-        model_id = "CIDAS/clipseg-rd64-refined"
-        self.seg_processor = AutoProcessor.from_pretrained(model_id)
-        self.seg_model = CLIPSegForImageSegmentation.from_pretrained(model_id)
-        self.seg_model.to(device)
-
-    def forward(self, image, text):
-        inputs = self.seg_processor(text=text, images=[image], return_tensors='pt').to(self.seg_model.device)
-        outputs = self.seg_model(**inputs)
-        preds = outputs.logits
-
-        while len(preds.shape) < 4:
-            preds = preds.unsqueeze(0)
-        preds = F.interpolate(preds, size=(image.height, image.width), mode='bilinear')
-
-        out = nn.Sigmoid()(preds)
-        out = (out - out.min()) / (out.max() - out.min())
-        out = (out > out.mean()).float().expand(-1, 4, -1, -1)
-        return out
   
 
 if __name__ == "__main__":
@@ -450,7 +427,7 @@ if __name__ == "__main__":
     # load stable diffusion
     model_id = "stable-diffusion-v1-5/stable-diffusion-v1-5"
     device = "cuda"
-    pipe = TiNOEditPipeline.from_pretrained(model_id , safety_checker=None, torch_dtype=torch.float16)
+    pipe = TiNOEditStrokeGuidedImageEditingPipeline.from_pretrained(model_id , safety_checker=None, torch_dtype=torch.float16)
     pipe.safety_checker = None
     pipe = pipe.to(device)
     pipe.enable_xformers_memory_efficient_attention()
@@ -458,13 +435,21 @@ if __name__ == "__main__":
     # initialize scheduler
     scheduler_config = dict(pipe.scheduler.config)
     scheduler_config["timestep_spacing"] = "trailing"
-    del scheduler_config["clip_sample"]
+    del scheduler_config["skip_prk_steps"]
     pipe.scheduler = TiNOEditDDIMScheduler(**scheduler_config)
 
     # get editing region
     original_image = Image.open(args.original_image_path)
-    mask_extractor = SegMaskExtractor(device)
-    mask = mask_extractor(original_image, args.mask_prompt)
+    user_input_image = Image.open(args.user_input_image_path)
+
+    image1_array = np.array(original_image)
+    image2_array = np.array(user_input_image)
+    difference = np.abs(image1_array - image2_array)
+    gray_difference = np.mean(difference, axis=2)
+    threshold_value = 30
+    binary_mask = gray_difference > threshold_value
+    tensor_mask = torch.from_numpy(binary_mask).float()
+    mask = tensor_mask.unsqueeze(0).unsqueeze(0).repeat(1, 4, 1, 1)
 
     # run optimization
     negative_prompt = 'out of frame, lowres, text, error, cropped, worst quality, low quality, jpeg artifacts, ugly, duplicate, morbid, mutilated, extra fingers, mutated hands, poorly drawn hands, mutation, deformed, blurry, dehydrated, bad anatomy, bad proportions, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck, username, watermark, signature,'
@@ -472,7 +457,7 @@ if __name__ == "__main__":
         original_prompt=args.original_prompt,
         prompt=args.target_prompt, 
         negative_prompt=negative_prompt,
-        image=original_image,
+        image=user_input_image,
         mask=mask,
         generator=torch.manual_seed(args.seed),
     ).images[0]
