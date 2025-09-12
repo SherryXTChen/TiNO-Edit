@@ -27,16 +27,31 @@ LatentCLIPvis and LatentVGG are the SD latent space equivalents of the CLIP visi
 
 For pure text-guided image editing, run
 ```python
-python text_guided_image_editing.py \
+python app_text_guided_image_editing.py \
   --original_image_path <original_image_path> \
   --original_prompt <original_prompt> \
   --target_prompt <target_prompt>
 ```
-See example in `text_guided_image_editing.py`, which enables face swap from the left to the right image below:
+See example in `app_text_guided_image_editing.py`, which enables face swap from the left to the right image below:
 
 <p align="center">
-  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/input.jpg" alt="input" width="25%" style="display:inline-block; margin-right: 5%;">
-  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/output.jpg" alt="output" width="25%" style="display:inline-block;">
+  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/examples/1_input.jpg" alt="input" width="25%" style="display:inline-block; margin-right: 5%;">
+  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/examples/1_output.jpg" alt="output" width="25%" style="display:inline-block;">
+</p>
+
+For stroke-guided image editing or image composition, run
+```python
+python app_stroke_guided_image_editing.py \
+  --original_image_path <original_image_path> \
+  --user_input_image_path <user_input_image_path> \
+  --original_prompt <original_prompt> \
+  --target_prompt <target_prompt>
+```
+See example in `app_stroke_guided_image_editing.py`, which convert user input stroke as follows:
+
+<p align="center">
+  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/2_user.jpg" alt="input" width="25%" style="display:inline-block; margin-right: 5%;">
+  <img src="https://github.com/SherryXTChen/TiNO-Edit/blob/main/assets/2_output.jpg" alt="output" width="25%" style="display:inline-block;">
 </p>
 
 
